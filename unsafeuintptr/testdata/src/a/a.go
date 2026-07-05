@@ -48,3 +48,27 @@ func safeKeepAliveCall(p *int) {
 func unsafeUnmarkedCall(p *int) {
 	unmarked(uintptr(unsafe.Pointer(p))) // want `not kept alive`
 }
+
+// The following exercise //nolint suppression: no diagnostic is expected.
+
+func suppressedTrailingNamed(p *int) {
+	x := uintptr(unsafe.Pointer(p)) //nolint:unsafeuintptr
+	_ = x
+}
+
+func suppressedTrailingBare(p *int) {
+	x := uintptr(unsafe.Pointer(p)) //nolint
+	_ = x
+}
+
+func suppressedStandaloneAbove(p *int) uintptr {
+	//nolint:unsafeuintptr
+	return uintptr(unsafe.Pointer(p))
+}
+
+// A //nolint for a different linter must NOT suppress this one.
+func notSuppressedOtherLinter(p *int) {
+	//nolint:otherlinter
+	z := uintptr(unsafe.Pointer(p)) // want `not kept alive`
+	_ = z
+}
