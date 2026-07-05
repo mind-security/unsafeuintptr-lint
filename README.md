@@ -89,6 +89,44 @@ Add them with `-allow`, as a comma-separated list of fully qualified names —
 unsafeuintptr -allow="example.com/x.MySyscall,example.com/x.Handle.Call" ./...
 ```
 
+## golangci-lint
+
+golangci-lint can't load an arbitrary analyzer at runtime; you compile it in with
+the [module plugin system](https://golangci-lint.run/plugins/module-plugins/).
+This repo ships the plugin (`plugin/`) and a build config (`.custom-gcl.yml`).
+
+1. Build a custom golangci-lint binary that includes this linter:
+
+   ```sh
+   golangci-lint custom   # reads .custom-gcl.yml, writes ./bin/custom-gcl
+   ```
+
+   For local development, point the plugin at your checkout instead of a tag by
+   swapping `version:` for `path:` in `.custom-gcl.yml`.
+
+2. Enable it in `.golangci.yml` (v2 shown; see `.golangci.example.yml`):
+
+   ```yaml
+   version: "2"
+   linters:
+     enable:
+       - unsafeuintptr
+     settings:
+       custom:
+         unsafeuintptr:
+           type: module
+           description: Reports unsafe.Pointer->uintptr conversions that are not kept alive.
+           settings:
+             allow: # optional, same as the -allow flag
+               - example.com/x.MySyscall
+   ```
+
+3. Run the custom binary:
+
+   ```sh
+   ./bin/custom-gcl run
+   ```
+
 ## Known limitations / false positives
 
 - **Address-as-number uses** — e.g. `fmt.Sprintf("%x", uintptr(unsafe.Pointer(p)))`,
