@@ -43,8 +43,23 @@ var Analyzer = &analysis.Analyzer{
 	Run:      run,
 }
 
+// checker holds the per-package state needed to classify conversions.
+type checker struct {
+	pass *analysis.Pass
+	// keepAlive is the set of same-package functions marked
+	// //go:uintptrescapes or //go:uintptrkeepalive.
+	keepAlive map[*types.Func]bool
+	// allow is the set of cross-package keep-alive callees, keyed by keyFor.
+	allow map[string]bool
+}
+
 func run(pass *analysis.Pass) (any, error) {
 	insp := pass.ResultOf[inspect.Analyzer].(*inspector.Inspector)
+	c := &checker{
+		pass:      pass,
+		keepAlive: keepAliveFuncs(pass),
+		allow:     buildAllowlist(),
+	}
 
 	nodeFilter := []ast.Node{(*ast.CallExpr)(nil)}
 	insp.WithStack(nodeFilter, func(n ast.Node, push bool, stack []ast.Node) bool {
@@ -55,7 +70,7 @@ func run(pass *analysis.Pass) (any, error) {
 		if !isPointerToUintptr(pass, call) {
 			return true
 		}
-		if isSafeContext(pass, stack) {
+		if c.isSafeContext(stack) {
 			return true
 		}
 		pass.Reportf(call.Pos(), "unsafe.Pointer converted to uintptr is not kept alive; "+
@@ -91,7 +106,7 @@ func isPointerToUintptr(pass *analysis.Pass, call *ast.CallExpr) bool {
 //
 // stack is ordered from the root file down to the conversion node itself, so
 // stack[len(stack)-1] is the conversion and we walk toward index 0.
-func isSafeContext(pass *analysis.Pass, stack []ast.Node) bool {
+func (c *checker) isSafeContext(stack []ast.Node) bool {
 	child := stack[len(stack)-1]
 	for i := len(stack) - 2; i >= 0; i-- {
 		parent := stack[i]
@@ -113,13 +128,12 @@ func isSafeContext(pass *analysis.Pass, stack []ast.Node) bool {
 				// method value); that is not a keep-alive use.
 				return false
 			}
-			if isConversionTo(pass, p, types.UnsafePointer) {
+			if isConversionTo(c.pass, p, types.UnsafePointer) {
 				// unsafe.Pointer(uintptr(...) + off): converted straight back.
 				return true
 			}
-			// A call argument is only safe if the callee keeps the pointer
-			// alive; that recognition is added by isKeepAliveCallee.
-			return isKeepAliveCallee(pass, p.Fun)
+			// A call argument is only safe if the callee keeps the pointer alive.
+			return c.isKeepAliveCallee(p)
 		default:
 			return false
 		}
