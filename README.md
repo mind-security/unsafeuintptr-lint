@@ -58,11 +58,52 @@ crosses the function boundary as a bare integer. A trailing
 `unsafe.Pointer` through the boundary and convert to `uintptr` only in the
 `//go:uintptrescapes` call itself.
 
-## Install
+## Use it in another repo (no local checkout)
+
+You do not need to clone or build this repo to use it. Pick whichever fits:
+
+**Run it ad hoc** — the Go toolchain fetches, builds, and caches it for you:
+
+```sh
+go run github.com/mind-security/unsafeuintptr-lint/cmd/unsafeuintptr@latest ./...
+```
+
+**Pin it as a tool dependency** (Go 1.24+) so everyone in the repo runs the same
+version, recorded in `go.mod`:
+
+```sh
+go get -tool github.com/mind-security/unsafeuintptr-lint/cmd/unsafeuintptr@v0.1.0
+go tool unsafeuintptr ./...
+```
+
+**Install the binary** once:
 
 ```sh
 go install github.com/mind-security/unsafeuintptr-lint/cmd/unsafeuintptr@latest
+unsafeuintptr ./...
 ```
+
+**GitHub Actions** — this repo is itself a composite action:
+
+```yaml
+- uses: actions/setup-go@v5
+  with:
+    go-version: stable
+- uses: mind-security/unsafeuintptr-lint@v0.1.0
+  with:
+    args: ./... # optional; defaults to ./...
+    # allow: pkg.Func  # optional; comma-separated -allow value
+```
+
+> **Private module note:** this repo is private, so consuming projects must let
+> Go authenticate to fetch it:
+>
+> ```sh
+> export GOPRIVATE=github.com/mind-security
+> git config --global url."git@github.com:".insteadOf "https://github.com/"
+> ```
+>
+> In CI, give the job a token/SSH key with read access to this repo.
 
 ## Usage
 

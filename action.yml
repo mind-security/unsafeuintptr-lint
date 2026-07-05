@@ -1,0 +1,33 @@
+name: unsafeuintptr
+description: Report unsafe.Pointer->uintptr conversions that are not kept alive.
+branding:
+  icon: alert-triangle
+  color: red
+inputs:
+  args:
+    description: Packages/patterns to analyze.
+    required: false
+    default: ./...
+  allow:
+    description: Comma-separated -allow value (extra keep-alive funcs/methods).
+    required: false
+    default: ""
+  version:
+    description: Version of the linter to run (a tag, or "latest").
+    required: false
+    default: latest
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        LINT_ARGS: ${{ inputs.args }}
+        LINT_ALLOW: ${{ inputs.allow }}
+        LINT_VERSION: ${{ inputs.version }}
+      run: |
+        allow_flag=()
+        if [ -n "$LINT_ALLOW" ]; then
+          allow_flag=(-allow "$LINT_ALLOW")
+        fi
+        go run "github.com/mind-security/unsafeuintptr-lint/cmd/unsafeuintptr@${LINT_VERSION}" \
+          "${allow_flag[@]}" $LINT_ARGS
