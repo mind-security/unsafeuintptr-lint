@@ -36,8 +36,12 @@ The conversion is considered safe only when:
 Any other use (storing in a variable, returning, placing in a struct/slice/map,
 or passing to an ordinary function) is reported.`
 
+// analyzerName is the analyzer's name; it is also the identifier accepted in
+// //nolint directives (e.g. //nolint:unsafeuintptr).
+const analyzerName = "unsafeuintptr"
+
 var Analyzer = &analysis.Analyzer{
-	Name:     "unsafeuintptr",
+	Name:     analyzerName,
 	Doc:      doc,
 	Requires: []*analysis.Analyzer{inspect.Analyzer},
 	Run:      run,
@@ -60,6 +64,7 @@ func run(pass *analysis.Pass) (any, error) {
 		keepAlive: keepAliveFuncs(pass),
 		allow:     buildAllowlist(),
 	}
+	suppressed := buildNolint(pass.Fset, pass.Files)
 
 	nodeFilter := []ast.Node{(*ast.CallExpr)(nil)}
 	insp.WithStack(nodeFilter, func(n ast.Node, push bool, stack []ast.Node) bool {
@@ -71,6 +76,9 @@ func run(pass *analysis.Pass) (any, error) {
 			return true
 		}
 		if c.isSafeContext(stack) {
+			return true
+		}
+		if suppressed(call.Pos()) {
 			return true
 		}
 		pass.Reportf(call.Pos(), "unsafe.Pointer converted to uintptr is not kept alive; "+

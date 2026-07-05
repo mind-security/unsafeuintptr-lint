@@ -120,7 +120,24 @@ Add them with `-allow`, as a comma-separated list of fully qualified names —
 unsafeuintptr -allow="example.com/x.MySyscall,example.com/x.Handle.Call" ./...
 ```
 
-## golangci-lint
+### Suppressing a finding
+
+The analyzer honors `//nolint` directives natively (no golangci-lint required),
+in the usual placements:
+
+```go
+x := uintptr(unsafe.Pointer(p)) //nolint:unsafeuintptr  // trailing, this line
+
+//nolint:unsafeuintptr
+y := uintptr(unsafe.Pointer(p))                          // standalone, next line
+
+z := uintptr(unsafe.Pointer(p)) //nolint                 // bare: suppresses all linters
+```
+
+A `//nolint:a,b` directive only suppresses when `unsafeuintptr` is among the
+listed names.
+
+## golangci-lint (optional)
 
 golangci-lint can't load an arbitrary analyzer at runtime; you compile it in with
 the [module plugin system](https://golangci-lint.run/plugins/module-plugins/).
@@ -163,8 +180,8 @@ This repo ships the plugin (`plugin/`) and a build config (`.custom-gcl.yml`).
 - **Address-as-number uses** — e.g. `fmt.Sprintf("%x", uintptr(unsafe.Pointer(p)))`,
   alignment checks, or using an address as a map key — are flagged even though
   they never dereference the pointer later. This is intentional under the strict
-  rule; suppress individual sites with a `//nolint:unsafeuintptr` comment (when
-  run under golangci-lint) or refactor.
+  rule; suppress individual sites with a `//nolint:unsafeuintptr` comment (see
+  [Suppressing a finding](#suppressing-a-finding)) or refactor.
 - **Cross-package `//go:uintptrescapes` functions** outside the built-in
   allowlist are flagged, because Go does not expose pragmas across package
   boundaries. Add them via `-allow`.
