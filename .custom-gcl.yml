@@ -1,0 +1,16 @@
+# Configuration for `golangci-lint custom`, which builds a golangci-lint binary
+# with the unsafeuintptr plugin compiled in. Run:
+#
+#   golangci-lint custom
+#
+# then use ./bin/custom-gcl in place of golangci-lint.
+version: v2.5.0
+name: custom-gcl
+destination: ./bin
+plugins:
+  # Build the plugin from this module. Use `version:` to pin a published tag,
+  # or `path:` (shown commented) to build against a local checkout.
+  - module: github.com/mind-security/unsafeuintptr-lint
+    import: github.com/mind-security/unsafeuintptr-lint/plugin
+    version: v0.1.0
+    # path: /path/to/unsafeuintptr-lint

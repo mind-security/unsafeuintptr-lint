@@ -1,0 +1,16 @@
+# Example .golangci.yml enabling the unsafeuintptr custom linter (golangci-lint v2).
+# Requires a custom binary built via `golangci-lint custom` (see .custom-gcl.yml).
+version: "2"
+linters:
+  enable:
+    - unsafeuintptr
+  settings:
+    custom:
+      unsafeuintptr:
+        type: module
+        description: Reports unsafe.Pointer->uintptr conversions that are not kept alive.
+        # Optional: extra cross-package keep-alive functions/methods.
+        settings:
+          allow:
+            - example.com/x.MySyscall
+            - example.com/x.Handle.Call
