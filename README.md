@@ -95,16 +95,6 @@ unsafeuintptr ./...
     # allow: pkg.Func  # optional; comma-separated -allow value
 ```
 
-> **Private module note:** this repo is private, so consuming projects must let
-> Go authenticate to fetch it:
->
-> ```sh
-> export GOPRIVATE=github.com/mind-security
-> git config --global url."git@github.com:".insteadOf "https://github.com/"
-> ```
->
-> In CI, give the job a token/SSH key with read access to this repo.
-
 ## Usage
 
 Standalone:
