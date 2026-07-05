@@ -1,4 +1,4 @@
-module github.com/mindio/uintptr-cast-lint
+module github.com/mind-security/unsafeuintptr-lint
 
 go 1.26
 

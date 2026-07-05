@@ -9,7 +9,7 @@ package main
 import (
 	"golang.org/x/tools/go/analysis/singlechecker"
 
-	"github.com/mindio/uintptr-cast-lint/unsafeuintptr"
+	"github.com/mind-security/unsafeuintptr-lint/unsafeuintptr"
 )
 
 func main() {

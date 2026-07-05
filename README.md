@@ -61,7 +61,7 @@ crosses the function boundary as a bare integer. A trailing
 ## Install
 
 ```sh
-go install github.com/mindio/uintptr-cast-lint/cmd/unsafeuintptr@latest
+go install github.com/mind-security/unsafeuintptr-lint/cmd/unsafeuintptr@latest
 ```
 
 ## Usage

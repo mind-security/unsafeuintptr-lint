@@ -5,7 +5,7 @@ import (
 
 	"golang.org/x/tools/go/analysis/analysistest"
 
-	"github.com/mindio/uintptr-cast-lint/unsafeuintptr"
+	"github.com/mind-security/unsafeuintptr-lint/unsafeuintptr"
 )
 
 func TestSamePackageAndAllowlist(t *testing.T) {
