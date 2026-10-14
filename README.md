@@ -196,3 +196,7 @@ go test ./...
 ```
 
 Tests use `analysistest` over `unsafeuintptr/testdata/src`.
+
+## License
+
+Licensed under the MIT License. See [LICENSE](LICENSE).
